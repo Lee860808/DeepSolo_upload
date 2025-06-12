@@ -1,0 +1,43 @@
+_BASE_: "../Base_det.yaml"
+
+MODEL:
+  WEIGHTS: "output/R50/150k_tt_mlt_13_15_textocr/finetune/ic15_train_net_ori_BS=2/model_0005999.pth"
+  TRANSFORMER:
+    INFERENCE_TH_TEST: 0.3
+  POST_PROCESS:
+    ENABLED: True # Set to True to use the LM post-processor with beam search
+    LM_PATH: "/home/kylee/DeepSolo/character_lm_enriched_5g.binary" # Path relative to where you run the script, or absolute path
+    LM_WEIGHT: 0.04 
+    BEAM_WIDTH: 1
+
+DATASETS:
+  TRAIN: ("ic15_train",)
+  TEST: ("ic15_test",)
+
+INPUT:
+  MIN_SIZE_TRAIN: (640, 700, 760, 820, 880, 940, 1000)
+  MAX_SIZE_TRAIN: 2000
+  MIN_SIZE_TEST: 1440
+  MAX_SIZE_TEST: 4000
+  CROP:
+    ENABLED: False
+  ROTATE: False
+
+SOLVER:
+  AMP:
+    ENABLED: True  # Enable Automatic Mixed Precision
+  IMS_PER_BATCH: 2
+  BASE_LR: 1.0e-5
+  LR_BACKBONE: 1.0e-6
+  WARMUP_ITERS: 250
+  STEPS: (1000, 5000)  # no step
+  MAX_ITER: 10000
+  GAMMA: 0.1
+  CHECKPOINT_PERIOD: 1000
+
+TEST:
+  EVAL_PERIOD: 1000
+  # 1 - Generic, 2 - Weak, 3 - Strong (for icdar2015)
+  LEXICON_TYPE: 1
+
+OUTPUT_DIR: "output/R50/150k_tt_mlt_13_15_textocr/finetune/ic15"

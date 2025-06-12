@@ -1,0 +1,44 @@
+_BASE_: "../Base_det.yaml"
+
+MODEL:
+  WEIGHTS: "output/vitaev2_s/150k_tt_mlt_13_15_textocr/finetune/ic15/model_0005999.pth"
+  ViTAEv2:
+    DROP_PATH_RATE: 0.2
+  TRANSFORMER:
+    INFERENCE_TH_TEST: 0.3
+  POST_PROCESS:
+    ENABLED: False # Set to True to use the LM post-processor with beam search
+    LM_PATH: "/home/kylee/DeepSolo/character_lm_enriched_5g.binary" # Path relative to where you run the script, or absolute path
+    LM_WEIGHT: 0.0 
+    BEAM_WIDTH: 1
+
+DATASETS:
+  TRAIN: ("ic15_train",)
+  TEST: ("ic15_test",)
+
+INPUT:
+  MIN_SIZE_TRAIN: (640, 700, 760, 800, 880)
+  MAX_SIZE_TRAIN: 1280
+  MIN_SIZE_TEST: 1400
+  MAX_SIZE_TEST: 4000
+  CROP:
+    ENABLED: False
+  ROTATE: False
+
+SOLVER:
+  AMP:
+    ENABLED: True  # Enable Automatic Mixed Precision
+  IMS_PER_BATCH: 2
+  BASE_LR: 1e-5
+  LR_BACKBONE: 1e-5
+  WARMUP_ITERS: 250
+  STEPS: (100000,)
+  MAX_ITER: 10000
+  CHECKPOINT_PERIOD: 1000
+
+TEST:
+  EVAL_PERIOD: 1000
+  # 1 - Generic, 2 - Weak, 3 - Strong (for icdar2015)
+  LEXICON_TYPE: 1
+
+OUTPUT_DIR: "output/vitaev2_s/150k_tt_mlt_13_15_textocr/finetune/ic15"

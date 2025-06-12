@@ -1,0 +1,5 @@
+# ninja log v6
+1	255	1745865098362577640	/home/kylee/DeepSolo/build/temp.linux-x86_64-3.9/home/kylee/DeepSolo/adet/layers/csrc/cuda_version.o	e7711fbef11899a7
+1	2286	1745865098362577640	/home/kylee/DeepSolo/build/temp.linux-x86_64-3.9/home/kylee/DeepSolo/adet/layers/csrc/DeformAttn/ms_deform_attn_cpu.o	96c07f918acd0a3c
+1	7382	1745865098362577640	/home/kylee/DeepSolo/build/temp.linux-x86_64-3.9/home/kylee/DeepSolo/adet/layers/csrc/vision.o	fd4e4e04511e8d6d
+1	9872	1745865098362577640	/home/kylee/DeepSolo/build/temp.linux-x86_64-3.9/home/kylee/DeepSolo/adet/layers/csrc/DeformAttn/ms_deform_attn_cuda.o	4fe548a677b9764b
