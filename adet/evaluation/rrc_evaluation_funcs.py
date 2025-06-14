@@ -397,7 +397,7 @@ def main_evaluation(p,det_file, gt_file, default_evaluation_params_fn,validate_d
     #     p = dict([s[1:].split('=') for s in sys.argv[1:]])
     #     if(len(sys.argv)<3):
     #         print_help()
-    p = {}
+    #p = {}
     p['g'] =gt_file  #'tttgt.zip'
     p['s'] =det_file #'det.zip'
 
