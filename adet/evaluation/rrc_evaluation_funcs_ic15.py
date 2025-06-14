@@ -310,12 +310,28 @@ def main_evaluation(p,default_evaluation_params_fn,validate_data_fn,evaluate_met
         resDict['Message']= str(e)
         resDict['calculated']=False
 
+    print(f"DEBUG: Inside main_evaluation. p dictionary: {p}")
+    print(f"DEBUG: Checking for 'o' in p. Is 'o' present? {'o' in p}")
     if 'o' in p:
         if not os.path.exists(p['o']):
             os.makedirs(p['o'])
 
-        resultsOutputname = p['o'] + '/results.zip'
+        print(f"DEBUG: Attempting to create/open results.zip in directory: {p['o']}")
+        resultsOutputname = os.path.join(p['o'] + '/results.zip')
+        print(f"DEBUG: Full path for results.zip: {resultsOutputname}")
+        if not os.path.exists(p['o']):
+            print(f"DEBUG: Directory {p['o']} does not exist. Attempting to create it.")
+            try:
+                os.makedirs(p['o'], exist_ok=True) # exist_ok=True is helpful
+                print(f"DEBUG: Directory {p['o']} created or already exists.")
+            except Exception as e_mkdir:
+                print(f"DEBUG: ERROR creating directory {p['o']}: {e_mkdir}")
+        # Potentially return or raise here if directory creation is critical and fails
+        else:
+            print(f"DEBUG: Directory {p['o']} already exists.")
+
         outZip = zipfile.ZipFile(resultsOutputname, mode='w', allowZip64=True)
+        print(f"DEBUG: zipfile.ZipFile handle created for {resultsOutputname}")
 
         del resDict['per_sample']
         if 'output_items' in resDict.keys():
@@ -340,6 +356,11 @@ def main_evaluation(p,default_evaluation_params_fn,validate_data_fn,evaluate_met
                     outZip.writestr( k,v) 
 
         outZip.close()
+        print(f"DEBUG: outZip.close() called for {resultsOutputname}")
+        if os.path.exists(resultsOutputname):
+            print(f"DEBUG: SUCCESS! {resultsOutputname} has been created.")
+        else:
+            print(f"DEBUG: FAILURE! {resultsOutputname} was NOT created after zip.close().")
 
     # if show_result:
     #     sys.stdout.write("Calculated!")
