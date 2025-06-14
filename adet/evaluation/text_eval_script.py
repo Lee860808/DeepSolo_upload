@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # encoding=utf8
 from collections import namedtuple
+import numpy as np
 from adet.evaluation import rrc_evaluation_funcs
 import importlib
 import sys
@@ -260,6 +261,8 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
 
     for resFile in gt:
         # print('resgt', resFile)
+        evaluationLog = ""
+        pairs = []
         gtFile = rrc_evaluation_funcs.decode_utf8(gt[resFile])
         if (gtFile is None) :
             raise Exception("The file %s is not UTF-8" %resFile)        
@@ -314,6 +317,10 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                 gtDontCarePolsNum.append( len(gtPols)-1 ) 
             if det_only_dontCare:
                 det_only_gtDontCarePolsNum.append( len(gtPols)-1 ) 
+        
+        # <<< ADDED: Log GT Info >>>
+        evaluationLog += "GT polygons: " + str(len(gtPols)) + (" (" + str(len(gtDontCarePolsNum)) + " don't care)\n" if len(gtDontCarePolsNum)>0 else "\n")
+        # <<< END ADDED >>>
 
         
         if resFile in subm:
@@ -354,6 +361,10 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                         if (precision > evaluationParams['AREA_PRECISION_CONSTRAINT'] ):
                             det_only_detDontCarePolsNum.append( len(detPols)-1 )
                             break
+
+            # <<< ADDED: Log DET Info >>>
+            evaluationLog += "DET polygons: " + str(len(detPols)) + (" (" + str(len(detDontCarePolsNum)) + " don't care)\n" if len(detDontCarePolsNum)>0 else "\n")
+            # <<< END ADDED >>>
                                  
             
             if len(gtPols)>0 and len(detPols)>0:
@@ -394,6 +405,13 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                                 detCorrect += (1 if correct else 0)
                                 if correct:
                                     detMatchedNums.append(detNum)
+                                pairs.append({'gt':gtNum,'det':detNum,'correct':correct})
+                                evaluationLog += "Match GT_idx #{} ('{}') with Det_idx #{} ('{}'). IoU: {:.2f}. Text Correct: {}.\n".format(
+                                                gtNum, gtTrans[gtNum],
+                                                detNum, detTrans[detNum],
+                                                iouMat[gtNum, detNum],
+                                                correct
+                                            )
                 
                 for gtNum in range(len(gtPols)):
                     for detNum in range(len(detPols)):
@@ -439,6 +457,8 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                                         'precision':precision,
                                         'recall':recall,
                                         'hmean':hmean,
+                                        'pairs':pairs,
+                                        'evaluationLog': evaluationLog,
                                         'iouMat':[] if len(detPols)>100 else iouMat.tolist(),
                                         'gtPolPoints':gtPolPoints,
                                         'detPolPoints':detPolPoints,
@@ -468,7 +488,21 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
     
     return resDict;
 
-def text_eval_main(det_file, gt_file, is_word_spotting):
+def text_eval_main(det_file, gt_file, is_word_spotting, output_dir_for_zip=None):
     global WORD_SPOTTING
     WORD_SPOTTING = is_word_spotting
-    return rrc_evaluation_funcs.main_evaluation(None,det_file, gt_file, default_evaluation_params,validate_data,evaluate_method)
+    p_for_config_output = {}
+    if output_dir_for_zip:
+        p_for_config_output['o'] = output_dir_for_zip
+    # If you had JSON evaluation parameters to pass, you would add them like:
+    # p_for_config_output['p'] = '{"SOME_PARAM": true}'
+
+    return rrc_evaluation_funcs.main_evaluation(
+        p_for_config_output,         # This is the 'p' argument main_evaluation expects for config/output options.
+        det_file,                    # This is the 'det_file' argument.
+        gt_file,                     # This is the 'gt_file' argument.
+        default_evaluation_params,   # This is 'default_evaluation_params_fn'.
+        validate_data,               # This is 'validate_data_fn'.
+        evaluate_method,             # This is 'evaluate_method_fn'.
+        per_sample=True              # Ensure per_sample logging is enabled if desired.
+    )
