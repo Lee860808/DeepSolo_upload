@@ -400,9 +400,22 @@ class TextEvaluator():
     
     def evaluate_with_official_code(self, result_path, gt_path):
         if "ic15" in self.dataset_name:
-            return text_eval_script_ic15.text_eval_main_ic15(det_file=result_path, gt_file=gt_path, is_word_spotting=self._word_spotting)
+            # MODIFIED LINE: Added output_dir_for_zip=self._output_dir
+            return text_eval_script_ic15.text_eval_main_ic15(
+                det_file=result_path, 
+                gt_file=gt_path, 
+                is_word_spotting=self._word_spotting,
+                output_dir_for_zip=self._output_dir  # <-- This is the fix
+            )
         else:
-            return text_eval_script.text_eval_main(det_file=result_path, gt_file=gt_path, is_word_spotting=self._word_spotting)
+            # For non-IC15 datasets, text_eval_script.py currently doesn't accept output_dir_for_zip.
+            # Fixing that path would require changes in text_eval_script.py and rrc_evaluation_funcs.py.
+            # This change specifically addresses the IC15 path based on the debug logs.
+            return text_eval_script.text_eval_main(
+                det_file=result_path, 
+                gt_file=gt_path, 
+                is_word_spotting=self._word_spotting
+            )
 
     def evaluate(self):
         if self._distributed:
