@@ -396,7 +396,11 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                                 if correct:
                                     detMatchedNums.append(detNum)
                                 pairs.append({'gt':gtNum,'det':detNum,'correct':correct})
-                                evaluationLog += "Match GT #" + str(gtNum) + " with Det #" + str(detNum) + " trans. correct: " + str(correct) + "\n"
+                                evaluationLog += "Match GT_idx #{} ('{}') with Det_idx #{} ('{}'). IoU: {:.2f}. Text Correct: {}.\n".format(
+                                                gtNum, gtTrans[gtNum],
+                                                detNum, detTrans[detNum],
+                                                iouMat[gtNum, detNum],
+                                                correct )
 
                 for gtNum in range(len(gtPols)):
                     for detNum in range(len(detPols)):
@@ -491,11 +495,15 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
 
 
 
-def text_eval_main_ic15(det_file, gt_file, is_word_spotting):
+def text_eval_main_ic15(det_file, gt_file, is_word_spotting, output_dir_for_zip=None):
     global WORD_SPOTTING
     WORD_SPOTTING = is_word_spotting
     p = {
         'g': gt_file,  
         's': det_file
     }
-    return rrc_evaluation_funcs.main_evaluation(p,default_evaluation_params,validate_data,evaluate_method)
+    if output_dir_for_zip: # If an output_dir is provided
+        p['o'] = output_dir_for_zip
+    
+    return rrc_evaluation_funcs.main_evaluation(p, default_evaluation_params, validate_data, evaluate_method, per_sample=True) # Ensure per_sample is True
+    
